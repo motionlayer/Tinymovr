@@ -143,6 +143,46 @@ static inline float fast_sin(float angle)
     return fast_cos(halfpi-angle);
 }
 
+static inline void fast_sincos(float angle, float *sin_out, float *cos_out)
+{
+    // Single range reduction to [0, 2pi]
+    angle = angle - our_floorf(angle * INVTWOPI) * TWOPI;
+    angle = angle > 0.f ? angle : -angle;
+
+    // Determine quadrant, compute reduced angle r in [0, pi/2],
+    // then evaluate cos_32s(r) and cos_32s(pi/2 - r) with
+    // appropriate signs. Polynomial evaluations are outside the
+    // branches for better pipeline and i-cache behavior.
+    float r, cos_sign, sin_sign;
+    if (angle < halfpi)
+    {
+        r = angle;
+        cos_sign = 1.0f;
+        sin_sign = 1.0f;
+    }
+    else if (angle < pi)
+    {
+        r = pi - angle;
+        cos_sign = -1.0f;
+        sin_sign = 1.0f;
+    }
+    else if (angle < threehalfpi)
+    {
+        r = angle - pi;
+        cos_sign = -1.0f;
+        sin_sign = -1.0f;
+    }
+    else
+    {
+        r = TWOPI - angle;
+        cos_sign = 1.0f;
+        sin_sign = -1.0f;
+    }
+
+    *cos_out = cos_sign * cos_32s(r);
+    *sin_out = sin_sign * cos_32s(halfpi - r);
+}
+
 typedef struct {
     float sum_current;
     float sum_current_squared;

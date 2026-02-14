@@ -98,6 +98,7 @@ void system_init(void)
 
     // Arbitrary value to avoid division by zero
     state.Vbus = 12.0f;
+    state.one_over_Vbus = 1.0f / 12.0f;
 
     // Derive VBus D value for given tau value
     config.Vbus_D = 1.0f - powf(EPSILON, -1.0f / (config.Vbus_tau * SYSTICK_FREQ_HZ));
@@ -109,6 +110,7 @@ void system_init(void)
 TM_RAMFUNC void system_update(void)
 {
     state.Vbus += config.Vbus_D * (((float)PAC55XX_ADC->DTSERES4.VAL) * VBUS_SCALING_FACTOR - state.Vbus);
+    state.one_over_Vbus = 1.0f / state.Vbus;
     if (state.Vbus < VBUS_LOW_THRESHOLD)
     {
         state.errors |= ERRORS_UNDERVOLTAGE;
@@ -143,6 +145,11 @@ TM_RAMFUNC float system_get_Vbus(void)
     return state.Vbus;
 }
 
+TM_RAMFUNC float system_get_one_over_Vbus(void)
+{
+    return state.one_over_Vbus;
+}
+
 TM_RAMFUNC bool system_get_calibrated(void)
 {
     return (frames_get_calibrated() &&
@@ -170,8 +177,8 @@ TM_RAMFUNC uint8_t system_get_warnings(void)
 TM_RAMFUNC bool errors_exist(void)
 {
     return (controller_get_errors() ||
-            commutation_sensor_p->get_errors_func(commutation_sensor_p) ||
-            position_sensor_p->get_errors_func(position_sensor_p) ||
+            commutation_sensor_p->errors ||
+            position_sensor_p->errors ||
             motor_get_errors() ||
             planner_get_errors() ||
             system_get_errors());

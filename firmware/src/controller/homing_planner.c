@@ -37,7 +37,7 @@ TM_RAMFUNC bool homing_planner_evaluate()
     const float current_pos_setpoint = controller_get_pos_setpoint_user_frame();
     if (state.stay_t_current >= config.max_stay_t)
     {
-        if (fabsf(current_pos_setpoint) > fabsf(config.retract_distance))
+        if (our_fabsf(current_pos_setpoint) > our_fabsf(config.retract_distance))
         {
             return false;
         }
@@ -52,7 +52,7 @@ TM_RAMFUNC bool homing_planner_evaluate()
         controller_set_vel_setpoint_user_frame(config.homing_velocity);
 
         const float observer_pos = user_frame_get_pos_estimate();
-        if (fabsf(user_frame_get_vel_estimate()) < config.max_stay_vel && fabsf(current_pos_setpoint - observer_pos) > config.max_stay_dpos)
+        if (our_fabsf(user_frame_get_vel_estimate()) < config.max_stay_vel && our_fabsf(current_pos_setpoint - observer_pos) > config.max_stay_dpos)
         {
             state.stay_t_current += PWM_PERIOD_S;
             if (state.stay_t_current >= config.max_stay_t)

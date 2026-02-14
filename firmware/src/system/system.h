@@ -25,6 +25,7 @@
 
 typedef struct {
     float Vbus;
+    float one_over_Vbus;
     uint8_t errors;
 } SystemState;
 
@@ -65,6 +66,7 @@ static inline uint32_t system_get_config_size(void)
 
 void system_reset_calibration(void);
 float system_get_Vbus(void);
+float system_get_one_over_Vbus(void);
 bool system_get_calibrated(void);
 uint8_t system_get_errors(void);
 uint8_t system_get_warnings(void);

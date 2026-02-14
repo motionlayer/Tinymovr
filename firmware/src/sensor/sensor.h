@@ -88,6 +88,7 @@ struct Sensor { // typedefd earlier
     sensor_get_ss_config_func_t get_ss_config_func;
     sensor_get_errors_func_t get_errors_func;
     uint8_t bits;
+    uint8_t errors;
     uint32_t ticks;
     float normalization_factor;
     bool initialized : 1;
@@ -104,6 +105,8 @@ static inline void sensor_update(Sensor *s, bool check_error)
     if (s->updated == false)
     {
         s->update_func(s, check_error);
+        // Cache errors for fast access from errors_exist()
+        s->errors = s->get_errors_func(s);
         s->updated = true;
     }
 }

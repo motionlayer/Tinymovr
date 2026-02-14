@@ -113,6 +113,7 @@ void SysTick_Handler(void)
     msTicks = msTicks + 1; 
     CAN_update();
 	system_update();
+	ADC_update_temp();
 }
 
 void UART_ReceiveMessageHandler(void)

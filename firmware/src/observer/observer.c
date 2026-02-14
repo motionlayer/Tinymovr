@@ -69,6 +69,7 @@ void observers_init_with_defaults(void)
 {
     observer_init_with_defaults(&commutation_observer, &commutation_sensor_p);
 	observer_init_with_defaults(&position_observer, &position_sensor_p);
+	observer_update_epos_factor();
 }
 
 void observers_get_config(ObserversConfig *_config)
@@ -83,6 +84,19 @@ void observers_restore_config(ObserversConfig *_config)
 	observer_init_with_config(&position_observer, &position_sensor_p, &(_config->config_position));
 	observer_update_params(&commutation_observer);
 	observer_update_params(&position_observer);
+	observer_update_epos_factor();
+}
+
+void observer_update_epos_factor(void)
+{
+	if (SENSOR_TYPE_HALL == ((*(commutation_observer.sensor_ptr))->config.type))
+	{
+		commutation_observer.epos_factor = twopi_by_common_ticks;
+	}
+	else
+	{
+		commutation_observer.epos_factor = twopi_by_common_ticks * motor_get_pole_pairs();
+	}
 }
 
 void commutation_observer_set_bandwidth(float bw)

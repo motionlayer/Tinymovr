@@ -40,6 +40,7 @@ struct Observer {
 	int32_t pos_sector;
 	float pos_estimate_wrapped;
 	float vel_estimate;
+	float epos_factor;
 	bool initialized : 1;
 	bool current : 1;
 };
@@ -56,6 +57,7 @@ bool observer_init_with_defaults(Observer *o, Sensor **s);
 bool observer_init_with_config(Observer *o, Sensor **s, ObserverConfig *c);
 void observer_update_params(Observer *o);
 void observer_reset_state(Observer *o);
+void observer_update_epos_factor(void);
 
 float observer_get_bandwidth(Observer *o);
 void observer_set_bandwidth(Observer *o, float bw);
@@ -194,18 +196,10 @@ static inline float motor_frame_get_vel_estimate(void)
 
 static inline float observer_get_epos_motor_frame(void)
 {
-	if (SENSOR_TYPE_HALL == ((*(commutation_observer.sensor_ptr))->config.type))
-	{
-		return motor_frame_get_pos_estimate() * twopi_by_common_ticks;
-	}
-	return motor_frame_get_pos_estimate() * twopi_by_common_ticks * motor_get_pole_pairs();
+	return motor_frame_get_pos_estimate() * commutation_observer.epos_factor;
 }
 
 static inline float observer_get_evel_motor_frame(void)
 {
-	if (SENSOR_TYPE_HALL == ((*(commutation_observer.sensor_ptr))->config.type))
-	{
-		return motor_frame_get_vel_estimate() * twopi_by_common_ticks;
-	}
-	return motor_frame_get_vel_estimate() * twopi_by_common_ticks * motor_get_pole_pairs();
+	return motor_frame_get_vel_estimate() * commutation_observer.epos_factor;
 }

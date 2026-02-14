@@ -223,7 +223,7 @@ TM_RAMFUNC void CLControlStep(void)
     if (state.mode >= CONTROLLER_MODE_POSITION)
     {
         const float delta_pos = get_diff_position_sensor_frame(state.pos_setpoint);
-        const float delta_pos_integral = sgnf(delta_pos) * our_fmaxf(0, fabsf(delta_pos) - config.vel_integral_deadband);
+        const float delta_pos_integral = sgnf(delta_pos) * our_fmaxf(0, our_fabsf(delta_pos) - config.vel_integral_deadband);
         vel_setpoint += delta_pos * config.pos_gain;
         vel_setpoint_integral += delta_pos_integral * config.pos_gain;
     }
@@ -260,7 +260,7 @@ TM_RAMFUNC void CLControlStep(void)
 
     // Flux braking
     const float Vbus_voltage = system_get_Vbus();
-    const float one_over_Vbus_voltage = 1.0f / Vbus_voltage;
+    const float one_over_Vbus_voltage = system_get_one_over_Vbus();
     if (config.max_Ibrake > 0)
     {
         state.Id_setpoint = our_clamp(-state.Ibus_est*Vbus_voltage, 0, config.max_Ibrake);
@@ -271,8 +271,8 @@ TM_RAMFUNC void CLControlStep(void)
     }
 
     const float e_phase = observer_get_epos_motor_frame();
-    const float c_I = fast_cos(e_phase);
-    const float s_I = fast_sin(e_phase);
+    float c_I, s_I;
+    fast_sincos(e_phase, &s_I, &c_I);
 
     float Vd;
     float Vq;

@@ -222,6 +222,7 @@ TM_RAMFUNC void motor_set_pole_pairs(uint8_t pairs)
 	{
 		config.pole_pairs = pairs;
 		config.poles_calibrated = true;
+		observer_update_epos_factor();
 	}
 }
 
