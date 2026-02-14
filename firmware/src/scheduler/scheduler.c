@@ -35,6 +35,16 @@ volatile SchedulerState scheduler_state = {0};
 
 void wait_for_control_loop_interrupt(void)
 {
+	// Send SPI commands for next cycle before sleeping.
+	// On the very first call this primes the pipeline;
+	// on subsequent calls it queues the read for the next wakeup.
+	// If both pointers point to the same sensor, it will only be
+	// prepared once (guarded by the 'prepared' flag).
+	sensor_invalidate(commutation_sensor_p);
+	sensor_invalidate(position_sensor_p);
+	sensor_prepare(commutation_sensor_p);
+	sensor_prepare(position_sensor_p);
+
 	while (!scheduler_state.adc_interrupt)
 	{
 		
@@ -63,7 +73,8 @@ void wait_for_control_loop_interrupt(void)
 		{
 			scheduler_state.busy = false;
 			scheduler_state.load = DWT->CYCCNT;
-			// Go back to sleep
+			// Go back to sleep; SPI transfer completes in hardware
+			// during idle time, result ready in RX FIFO on wakeup.
 			__DSB();
 			__ISB();
 			__WFI();
@@ -72,18 +83,14 @@ void wait_for_control_loop_interrupt(void)
 	scheduler_state.busy = true;
 	scheduler_state.adc_interrupt = false;
 	DWT->CYCCNT = 0;
-	// We have to service the control loop by updating
-	// current measurements and encoder estimates.
-	sensor_invalidate(commutation_sensor_p);
-	sensor_invalidate(position_sensor_p);
-	observer_invalidate(&commutation_observer);
-	observer_invalidate(&position_observer);
-	// If both pointers point to the same sensor, it will only br prepared and updated once
-	sensor_prepare(commutation_sensor_p);
-	sensor_prepare(position_sensor_p);
-	ADC_update();
+	// Read SPI results from the previous cycle's prepare command.
+	// Data is already in the RX FIFO, so ssp_read_one() returns
+	// instantly with no busy-wait.
 	sensor_update(commutation_sensor_p, true);
 	sensor_update(position_sensor_p, true);
+	ADC_update();
+	observer_invalidate(&commutation_observer);
+	observer_invalidate(&position_observer);
 	observer_update(&commutation_observer);
 	observer_update(&position_observer);
 	// At this point control is returned to main loop.

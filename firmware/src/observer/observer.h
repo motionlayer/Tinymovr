@@ -126,6 +126,14 @@ static inline float observer_get_pos_estimate(Observer *o)
 	return primary + o->pos_estimate_wrapped;
 }
 
+// Returns position estimate extrapolated forward by one control period
+// using the velocity estimate. Compensates for the 1-cycle stale sensor
+// read introduced by the split SPI transaction scheduling.
+static inline float observer_get_pos_estimate_extrapolated(Observer *o)
+{
+	return observer_get_pos_estimate(o) + o->vel_estimate * PWM_PERIOD_S;
+}
+
 static inline float get_diff_position_sensor_frame(float target)
 {
 	const float primary = SENSOR_COMMON_RES_TICKS * position_observer.pos_sector;
@@ -202,4 +210,12 @@ static inline float observer_get_epos_motor_frame(void)
 static inline float observer_get_evel_motor_frame(void)
 {
 	return motor_frame_get_vel_estimate() * commutation_observer.epos_factor;
+}
+
+// Extrapolated electrical position for FOC commutation.
+// Compensates for the 1-cycle stale sensor read.
+static inline float observer_get_epos_motor_frame_extrapolated(void)
+{
+	return observer_get_epos_motor_frame()
+		 + observer_get_evel_motor_frame() * PWM_PERIOD_S;
 }

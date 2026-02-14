@@ -285,7 +285,7 @@ TM_RAMFUNC void CLControlStep(void)
         state.Id_setpoint = 0.0f;
     }
 
-    const float e_phase = observer_get_epos_motor_frame();
+    const float e_phase = observer_get_epos_motor_frame_extrapolated();
     float c_I, s_I;
     fast_sincos(e_phase, &s_I, &c_I);
 
