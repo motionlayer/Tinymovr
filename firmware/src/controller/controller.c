@@ -30,6 +30,8 @@
 void CLPreStep(void);
 void CLPreCheck(void);
 void CLControlStep(void);
+
+static inline void controller_update_integral_params(void);
 static inline bool Controller_LimitVelocity(float min_limit, float max_limit, float vel_estimate,
                                                             float vel_gain, float *I);
 
@@ -76,11 +78,14 @@ static ControllerConfig config = {
     .pos_gain = 20.0f,
     .vel_gain = 8.0e-5f,
     .vel_integral_gain = 0.00020f,
+    .vel_integral_gain_period = 0.00020f / PWM_FREQ_HZ,
     .vel_integral_deadband = 200.0f,
     .I_bw = 2000.0,
     .I_gain = 0.0f,
     .Iq_integral_gain = 0.0f,
     .Id_integral_gain = 0.0f,
+    .Iq_integral_gain_period = 0.0f,
+    .Id_integral_gain_period = 0.0f,
     .I_k = 0.3f,
     .vel_increment = 100.0f, // ticks/cycle
     .max_Ibus_regen = 0.0f,
@@ -94,17 +99,27 @@ static ControllerConfig config = {
     .pos_gain = 8.0f,
     .vel_gain = 5.0e-5f,
     .vel_integral_gain = 0.00020f,
+    .vel_integral_gain_period = 0.00020f / PWM_FREQ_HZ,
     .vel_integral_deadband = 200.0f,
     .I_bw = 2000.0,
     .I_gain = 0.0f,
     .Iq_integral_gain = 0.0f,
     .Id_integral_gain = 0.0f,
+    .Iq_integral_gain_period = 0.0f,
+    .Id_integral_gain_period = 0.0f,
     .I_k = 0.3f,
     .vel_increment = 100.0f, // ticks/cycle
     .max_Ibus_regen = 0.0f,
     .max_Ibrake = 0.0f}; 
 
 #endif
+
+static inline void controller_update_integral_params(void)
+{
+    config.vel_integral_gain_period = config.vel_integral_gain * PWM_PERIOD_S;
+    config.Iq_integral_gain_period = config.Iq_integral_gain * PWM_PERIOD_S;
+    config.Id_integral_gain_period = config.Id_integral_gain * PWM_PERIOD_S;
+}
 
 void Controller_ControlLoop(void)
 {
@@ -236,7 +251,7 @@ TM_RAMFUNC void CLControlStep(void)
         const float delta_vel = vel_setpoint - vel_estimate;
         // Velocity limiting will be done later on based on the estimate
         Iq_setpoint += apply_velocity_transform(delta_vel * config.vel_gain + state.vel_integrator, frame_position_sensor_to_motor_p());
-        state.vel_integrator += (vel_setpoint_integral - vel_estimate) * PWM_PERIOD_S * config.vel_integral_gain;
+        state.vel_integrator += (vel_setpoint_integral - vel_estimate) * config.vel_integral_gain_period;
     }
     else
     {
@@ -300,8 +315,8 @@ TM_RAMFUNC void CLControlStep(void)
         const float delta_Id = state.Id_setpoint - state.Id_estimate;
         const float delta_Iq = Iq_setpoint - state.Iq_estimate;
 
-        state.Id_integrator += delta_Id * PWM_PERIOD_S * config.Id_integral_gain;
-        state.Iq_integrator += delta_Iq * PWM_PERIOD_S * config.Iq_integral_gain;
+        state.Id_integrator += delta_Id * config.Id_integral_gain_period;
+        state.Iq_integrator += delta_Iq * config.Iq_integral_gain_period;
 
         Vd = (delta_Id * config.I_gain) + state.Id_integrator;
         Vq = (delta_Iq * config.I_gain) + state.Iq_integrator;
@@ -493,6 +508,7 @@ void controller_set_vel_integral_gain(float gain)
     if (gain >= 0.0f)
     {
         config.vel_integral_gain = gain;
+        controller_update_integral_params();
     }
 }
 
@@ -617,6 +633,7 @@ ControllerConfig *controller_get_config(void)
 void controller_restore_config(ControllerConfig *config_)
 {
     config = *config_;
+    controller_update_integral_params();
 }
 
 static inline bool Controller_LimitVelocity(const float min_limit, const float max_limit, const float vel_estimate,
@@ -633,6 +650,7 @@ TM_RAMFUNC void controller_update_I_gains(void)
     float plant_pole = motor_get_phase_resistance() / motor_get_phase_inductance();
     config.Iq_integral_gain = plant_pole * config.I_gain;
     config.Id_integral_gain = config.Iq_integral_gain;
+    controller_update_integral_params();
 }
 
 TM_RAMFUNC uint8_t controller_get_warnings(void)

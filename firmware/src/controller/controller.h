@@ -55,11 +55,14 @@ typedef struct
     float pos_gain;
     float vel_gain;
     float vel_integral_gain;
+    float vel_integral_gain_period;
     float vel_integral_deadband;
     float I_bw;
     float I_gain;
     float Iq_integral_gain;
     float Id_integral_gain;
+    float Iq_integral_gain_period;
+    float Id_integral_gain_period;
     float I_k;
     float vel_increment;
     float max_Ibus_regen;
