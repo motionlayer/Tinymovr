@@ -87,7 +87,7 @@ void observers_restore_config(ObserversConfig *_config)
 	observer_update_epos_factor();
 }
 
-void observer_update_epos_factor(void)
+TM_RAMFUNC void observer_update_epos_factor(void)
 {
 	if (SENSOR_TYPE_HALL == ((*(commutation_observer.sensor_ptr))->config.type))
 	{
