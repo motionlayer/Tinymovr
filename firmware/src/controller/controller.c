@@ -299,11 +299,11 @@ TM_RAMFUNC void CLControlStep(void)
     }
     else
     {
-        ADC_get_phase_currents(&(state.I_phase_meas));
+        const FloatTriplet *I_meas = ADC_get_phase_currents_ptr();
 
         // Clarke transform
-        const float Ialpha = state.I_phase_meas.A;
-        const float Ibeta = one_by_sqrt3 * (state.I_phase_meas.B - state.I_phase_meas.C);
+        const float Ialpha = I_meas->A;
+        const float Ibeta = one_by_sqrt3 * (I_meas->B - I_meas->C);
 
         // Park transform
         const float Id = (c_I * Ialpha) + (s_I * Ibeta);

@@ -255,6 +255,11 @@ TM_RAMFUNC void ADC_get_phase_currents(FloatTriplet *phc)
     phc->C = adc_state.I_phase_meas.C;
 }
 
+TM_RAMFUNC const FloatTriplet *ADC_get_phase_currents_ptr(void)
+{
+    return &adc_state.I_phase_meas;
+}
+
 TM_RAMFUNC void ADC_update(void)
 {
     switch (controller_get_state())
