@@ -8,6 +8,8 @@ generators:
       output_enums: ./firmware/src/tm_enums.h
       output_header: ./firmware/src/can/can_endpoints.h
       output_impl: ./firmware/src/can/can_endpoints.c
+      output_metadata_header: ./firmware/src/can/avlos_endpoint_metadata.h
+      output_metadata_impl: ./firmware/src/can/avlos_endpoint_metadata.c
     header_includes:
     - src/common.h
     - src/tm_enums.h

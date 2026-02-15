@@ -1,6 +1,9 @@
 # --- Macos Specific
 .DS_Store
 
+# --- Hardware datasheets (copyright restrictions)
+hardware/Datasheets/
+
 # --- Sphinx documentation
 docs/_build/
 
@@ -9,3 +12,8 @@ docs/_build/
 Tinymovr.code-workspace
 .aider*
 .env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class

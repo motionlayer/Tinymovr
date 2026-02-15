@@ -43,5 +43,6 @@ void CAN_set_send_heartbeat(bool value);
 
 CANConfig *CAN_get_config(void);
 void CAN_restore_config(CANConfig *config_);
+void CAN_restore_id(uint8_t id);
 
 void CAN_update(void);

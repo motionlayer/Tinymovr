@@ -1,5 +1,6 @@
 sphinx>=5.2.3
 sphinxcontrib-programoutput
+sphinxcontrib-mermaid
 sphinx-inline-tabs
 sphinx-copybutton
 furo

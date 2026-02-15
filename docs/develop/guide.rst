@@ -42,7 +42,7 @@ Connection with SWD adapter (e.g. isolator) for R5:
 
 (diagrams made with `Wireviz <https://github.com/formatc1702/WireViz>`_)
 
-As of Tinymovr 1.0.1, it is no longer necessary to patch the ``JLinkDevices.xml`` file with the PAC additions, in order for JLinkGDBServer to work properly. Relevant files are included in the repo.
+As of Tinymovr 1.0.1, it is no longer necessary to patch the ``JLinkDevices.xml`` file (in ``firmware/pac55xx_device_pack/``) with the PAC additions, in order for JLinkGDBServer to work properly. Relevant files are included in the repo.
 
 
 .. _develop-preparation:
@@ -205,6 +205,76 @@ This will connect to a remote JLink server, upload the firmware to the remote Ti
 Note that the launch configurations can be selected and initiated from the VSCode "Run and Debug" pane. You can also hit ``F5`` to launch the currently selected configuration.
 
 Congrats! You are now fully set to start with Tinymovr development!
+
+
+Using ST-Link (Alternative to J-Link)
+*************************************
+
+As a more affordable alternative to J-Link, you can use ST-Link V2 or V3 adapters with PyOCD. ST-Link V2 clones are widely available for as little as $3-10. 
+
+The Tinymovr repo includes a custom PyOCD target pack that enables ST-Link support for the PAC5527 MCU.
+
+Prerequisites
+-------------
+
+Install PyOCD:
+
+.. code-block:: console
+
+    pip install pyocd
+
+PyOCD can be installed globally or in a virtual environment. The VSCode tasks and Makefile targets use the ``firmware/scripts/pyocd_run.sh`` wrapper script, which automatically discovers PyOCD in the following locations (in order of priority):
+
+1. System PATH (global install)
+2. Project virtual environment at ``<workspace>/venv/``
+
+.. note::
+   The ``pyocd_run.sh`` script is necessary because Makefile commands spawn a new shell without access to any activated virtual environment. The script ensures PyOCD is found regardless of how it was installed.
+
+The ST-Link hardware connects to Tinymovr using the same SWD pinout as J-Link (GND, SWDIO, SWCLK, VTref). See the connection diagrams above.
+
+VSCode Launch Configurations
+----------------------------
+
+The repo includes several ST-Link configurations in ``.vscode/launch.json``, all prefixed with ``[ST-Link]``:
+
+- **[ST-Link] Rebuild Debug and Start Session** - Clean debug build, flash, and start debugging
+- **[ST-Link] Rebuild Release and Flash** - Clean release build and flash
+- **[ST-Link] Flash Built Binary and Start Session** - Flash existing binary and debug
+- **[ST-Link] Flash Built Binary** - Flash existing binary only
+- **[ST-Link] Attach to Target** - Attach to running target
+
+When the debug session ends, the PyOCD GDB server is automatically terminated.
+
+Command Line Usage
+------------------
+
+You can also flash directly from the command line using Make targets:
+
+.. code-block:: console
+
+    cd firmware
+    make release REV=R52
+    make flash-stlink
+
+Additional Makefile targets:
+
+- ``make flash-stlink`` - Flash the built binary
+- ``make erase-stlink`` - Erase the entire chip
+- ``make reset-stlink`` - Reset the target
+
+Or use PyOCD directly:
+
+.. code-block:: console
+
+    pyocd flash -t pac5527 --pack firmware/pac55xx_device_pack/ firmware/build/tinymovr_fw.bin
+    pyocd gdbserver -t pac5527 --pack firmware/pac55xx_device_pack/
+
+Limitations
+-----------
+
+- ST-Link support uses PyOCD's implementation of the PAC55XX flash algorithm. If you encounter issues, J-Link remains the recommended option.
+- Remote debugging (like the J-Link remote server setup) is not supported with ST-Link configurations.
 
 
 Using Eclipse

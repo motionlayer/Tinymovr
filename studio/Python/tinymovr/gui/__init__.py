@@ -14,7 +14,7 @@ from tinymovr.gui.helpers import (
     get_dynamic_attrs,
     is_dark_mode,
     strtobool,
-    configure_pretty_errors
+    configure_pretty_errors,
 )
 from tinymovr.gui.widgets import (
     NodeTreeWidgetItem,

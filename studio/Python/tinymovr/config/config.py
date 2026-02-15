@@ -16,6 +16,7 @@ this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
 import yaml
+from contextlib import nullcontext
 from pathlib import Path
 import logging
 from importlib_resources import files
@@ -173,6 +174,38 @@ def configure_logging():
     logger = logging.getLogger("tinymovr")
     logger.setLevel(logging.DEBUG)
     return logger
+
+
+def export_config(device):
+    """
+    Export the device configuration as a nested dictionary.
+
+    Args:
+        device: An Avlos RemoteNode (e.g. a Tinymovr device instance).
+
+    Returns:
+        A nested dict of exportable attribute values, suitable for
+        JSON serialization with :class:`avlos.json_codec.AvlosEncoder`.
+    """
+    return device.export_values()
+
+
+def import_config(device, config_data):
+    """
+    Import a configuration dictionary into the device.
+
+    Automatically throttles CAN write frames during the bulk import
+    to prevent overwhelming the device receive buffer.  On channels
+    that don't support throttling the import proceeds at full speed.
+
+    Args:
+        device: An Avlos RemoteNode (e.g. a Tinymovr device instance).
+        config_data: A nested dict as returned by :func:`export_config`
+            (or loaded from a JSON file).
+    """
+    throttle = getattr(device.channel, "throttled", nullcontext)
+    with throttle():
+        device.import_values(config_data)
 
 
 def cleanup_incomplete_version(version_str, char="."):

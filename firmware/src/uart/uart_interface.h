@@ -22,6 +22,5 @@
 #include "src/common.h"
 
 void UART_process_message(void);
-void UART_SendInt32(int32_t val);
 
 #endif /* UART_UART_INTERFACE_H_ */

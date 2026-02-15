@@ -41,6 +41,50 @@ The above code block will instantiate a Tinymovr with CAN bus id of 1 and calibr
     tm.controller.velocity_mode()
     tm.controller.velocity.setpoint = 80000
 
+Exporting & Importing Configuration
+####################################
+
+You can export and import the full device configuration programmatically using ``export_config`` and ``import_config``. This is useful for saving tuning parameters to a file, replicating a setup across boards, or restoring configuration after a firmware update.
+
+.. code-block:: python
+
+    import json
+    from avlos.json_codec import AvlosEncoder
+    from tinymovr.config import export_config, import_config
+
+    # Export current configuration
+    config = export_config(tm)
+
+    # Save to file
+    with open("my_config.json", "w") as f:
+        json.dump(config, f, cls=AvlosEncoder, indent=2)
+
+    # Later, load and import
+    with open("my_config.json", "r") as f:
+        config = json.load(f)
+    import_config(tm, config)
+
+    # Persist to flash (optional)
+    tm.save_config()
+
+The exported dictionary includes controller gains, trajectory planner limits, sensor settings, motor calibration parameters, homing configuration, and other settable attributes. CAN bus parameters (ID and baud rate) are excluded to prevent communication disruption.
+
+``import_config`` automatically handles CAN bus write throttling to ensure all values are reliably delivered to the device. Use ``import_config`` rather than calling ``import_values`` directly.
+
+.. function:: export_config(device)
+
+   Export the device configuration as a nested dictionary.
+
+   :param device: A Tinymovr device instance (Avlos RemoteNode).
+   :return: A nested dict suitable for JSON serialization with ``AvlosEncoder``.
+
+.. function:: import_config(device, config_data)
+
+   Import a configuration dictionary into the device.
+
+   :param device: A Tinymovr device instance (Avlos RemoteNode).
+   :param config_data: A nested dict as returned by ``export_config`` or loaded from a JSON file.
+
 BusRouter API
 #############
 

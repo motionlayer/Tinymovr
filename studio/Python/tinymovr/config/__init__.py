@@ -5,4 +5,6 @@ from tinymovr.config.config import (
     create_device,
     create_device_with_hash_msg,
     add_spec,
+    export_config,
+    import_config,
 )

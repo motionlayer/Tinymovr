@@ -23,9 +23,15 @@ class TestWatchdog(TMTestCase):
         """
         Test Watchdog function
         """
+        hw_rev = self.tm.hw_revision
         self.check_state(0)
         self.try_calibrate()
-        
+
+        if hw_rev > 20:
+            self.tm.controller.position.p_gain = 5
+            self.tm.controller.velocity.p_gain = 2e-5
+            self.tm.controller.velocity.i_gain = 0
+
         self.tm.watchdog.enabled = True
         self.assertEqual(self.tm.watchdog.enabled, True)
         self.tm.watchdog.timeout = 1.0 * s
