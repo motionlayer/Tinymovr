@@ -49,12 +49,16 @@ class NodeTreeWidgetItem(QTreeWidgetItem):
     Inheritance:
     - Inherits from QTreeWidgetItem.
 
+    Attributes:
+    - _tm_node (Node or None): When this item represents a device root, the device node; otherwise None.
+
     Methods:
     - add_to_tree(tree_widget): Adds the current tree widget item to the provided tree widget and initializes its children.
     - _add_to_tree_cb(): Iteratively calls the '_add_to_tree_cb' method for each child node, enabling a recursive representation of the node hierarchy.
     """
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, node=None, *args, **kwargs):
         super().__init__([name, 0, ""], *args, **kwargs)
+        self._tm_node = node
 
     def add_to_tree(self, tree_widget):
         tree_widget.addTopLevelItem(self)

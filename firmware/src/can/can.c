@@ -190,6 +190,11 @@ void CAN_restore_config(CANConfig *config_)
     config = *config_;
 }
 
+void CAN_restore_id(uint8_t id)
+{
+    config.id = id;
+}
+
 void CAN_update(void) {
     // Transmit heartbeat
     if (can_state.send_heartbeat == true)

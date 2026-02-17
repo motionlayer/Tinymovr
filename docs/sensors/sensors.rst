@@ -2,36 +2,30 @@ Sensors and Encoders
 ####################
 
 
-Overview
-********
-
-This document provides information and guides for using the various angle sensor and encoder types supported by Tinymovr.
-
-
 Connector Overview
 ******************
 
 R5.3
 ====
-.. image:: connectors_R53.jpg
+.. image:: connectors_R53.png
   :width: 800
   :alt: Tinymovr R5.3 connector diagram
 
 R5.2
 ====
-.. image:: connectors_R52.jpg
+.. image:: connectors_R52.png
   :width: 800
   :alt: Tinymovr R5.2 connector diagram
 
 R5.1
 ====
-.. image:: connectors_R51.jpg
+.. image:: connectors_R51.png
   :width: 800
   :alt: Tinymovr R5.1 connector diagram
 
 M5.1/M5.2
 =========
-.. image:: connectors_M52.jpg
+.. image:: connectors_M52.png
   :width: 800
   :alt: Tinymovr M5.1/M5.2 connector diagram
 

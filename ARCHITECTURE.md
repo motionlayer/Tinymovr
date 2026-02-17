@@ -170,6 +170,86 @@ Every 50 μs (20 kHz):
 
 **Optimization**: Critical functions marked for RAM execution (zero wait states).
 
+### Configuration Persistence (NVM)
+
+**Location**: [firmware/src/nvm/](firmware/src/nvm/)
+
+Device configuration is persisted to flash pages 120-127 (8 KB region at `0x0001E000`). The NVM subsystem uses wear-leveling slots so that no single flash page is written disproportionately.
+
+#### Slot Layout
+
+Each slot is laid out as:
+
+```
+┌──────────────────────────────── Slot ────────────────────────────────┐
+│  NVMMetadata (32 bytes)            │  NVMStruct (config payload)    │
+│                                    │                                │
+│  byte 0:  node_id_1               │  Per-module configs:           │
+│  byte 1:  node_id_2               │    frames, ADC, motor,         │
+│  bytes 2-15:  reserved             │    sensors, observers,         │
+│  bytes 16-19: sequence_number      │    controller, CAN,            │
+│  bytes 20-23: magic (0x544D4E56)   │    trajectory planner,         │
+│  bytes 24-25: data_size            │    homing planner              │
+│  bytes 26-27: metadata_version     │  version[16] (GIT_VERSION)    │
+│  bytes 28-31: metadata_checksum    │  checksum (config integrity)  │
+└────────────────────────────────────┴────────────────────────────────┘
+```
+
+The metadata header has its own checksum and magic marker, making it independently verifiable even when the config payload is invalid (e.g. after a firmware update changes the version string or struct layout).
+
+#### CAN Node ID Preservation
+
+A critical design goal is that the CAN node ID survives firmware updates. On a multi-device CAN bus, if every device reset to ID 1 after flashing, all devices would collide and become unreachable.
+
+The CAN ID is stored redundantly:
+- **In the metadata header**: `node_id_1` and `node_id_2` (bytes 0-1), protected by `metadata_checksum`
+- **In the config payload**: inside `CANConfig.id`, protected by the config `checksum`
+
+During boot, `nvm_load_config()` restores the CAN ID from the metadata **before** checking the firmware version:
+
+```mermaid
+flowchart TD
+    A["nvm_load_config()"] --> B["Scan slots, find latest"]
+    B --> C{"Valid metadata?"}
+    C -- No --> D["Return false, ID stays default 1"]
+    C -- Yes --> E{"node_id_1 == node_id_2 and >= 1?"}
+    E -- Yes --> F["Restore CAN ID from metadata"]
+    E -- No --> G["Skip ID restore"]
+    F --> H["Read NVMStruct, validate checksum"]
+    G --> H
+    H --> I{"Version matches?"}
+    I -- Yes --> J["Restore full config, return true"]
+    I -- No --> K["Return false - but CAN ID is already set"]
+```
+
+This means:
+- **Normal boot (same firmware)**: Full config is restored, including CAN ID. The early ID restore is a harmless no-op since the full restore writes the same value.
+- **After firmware update (version mismatch)**: The metadata is still valid (its format is stable across versions), so the CAN ID is restored. The full config restore fails the version check, so sensors/observers get defaults -- but the device remains addressable on the bus.
+- **Corrupted NVM**: Metadata validation fails, function returns early. Device uses default ID 1 (safe fallback).
+- **Fresh device**: No valid slots found, default ID 1 is used.
+
+**Bootloader caveat**: The bootloader reads the CAN ID from the fixed address `0x0001E000` (start of slot 0), not the wear-leveled latest slot. If the application has written newer configs to higher slots, the bootloader's CAN ID may differ from the application's. This means `--node_id` for `tinymovr_dfu` must match the bootloader's ID, not necessarily the application's.
+
+#### Saving and Wear Leveling
+
+On save, `nvm_save_config()`:
+1. Selects the next slot in round-robin order
+2. If the CAN ID has changed since the last save, forces a write to slot 0 (so slot 0 always reflects the current ID)
+3. Writes the metadata header followed by the config payload
+4. Verifies the write via readback
+
+The slot with the highest sequence number is always the most recent valid config. `nvm_wl_scan_slots()` reconstructs this state on boot.
+
+#### DFU and NVM Preservation
+
+The DFU bootloader's `erase_all` command wipes pages 4-127, which includes the NVM config region (pages 120-127). To prevent config loss during firmware updates, [studio/Python/tinymovr/dfu.py](studio/Python/tinymovr/dfu.py) performs:
+
+- **Before erase**: Reads the entire 8 KB NVM region via `read_flash_32`
+- **After firmware write**: Writes the NVM data back via scratchpad + `commit`, skipping erased (all-0xFF) chunks
+- **Before reset**: NVM is fully restored, so the device boots with its original config
+
+This ensures the CAN node ID and all other settings survive firmware updates without the device ever appearing at default ID 1 on the bus.
+
 ### Board Revision Support
 
 Multiple hardware revisions supported via compile-time configuration:

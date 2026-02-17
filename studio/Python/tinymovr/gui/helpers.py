@@ -557,25 +557,34 @@ def display_warning(title, text):
     msg_box.exec_()
 
 
+_last_file_dialog_dir = os.path.expanduser("~/Documents")
+
+
 def display_file_open_dialog():
     """
-    Display the file open dialog
+    Display the file open dialog.
+    Remembers the last used directory across open/save calls.
     """
-    documents_dir = os.path.expanduser("~/Documents")
+    global _last_file_dialog_dir
     file_name, _ = QFileDialog.getOpenFileName(
-        None, "Select JSON File", "", "JSON Files (*.json)"
+        None, "Select JSON File", _last_file_dialog_dir, "JSON Files (*.json)"
     )
+    if file_name:
+        _last_file_dialog_dir = os.path.dirname(file_name)
     return file_name
 
 
 def display_file_save_dialog():
     """
-    Display the file save dialog
+    Display the file save dialog.
+    Remembers the last used directory across open/save calls.
     """
-    documents_dir = os.path.expanduser("~/Documents")
+    global _last_file_dialog_dir
     file_name, _ = QFileDialog.getSaveFileName(
-        None, "Save JSON File", documents_dir, "JSON Files (*.json)"
+        None, "Save JSON File", _last_file_dialog_dir, "JSON Files (*.json)"
     )
+    if file_name:
+        _last_file_dialog_dir = os.path.dirname(file_name)
     return file_name
 
 

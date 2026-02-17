@@ -15,6 +15,8 @@ You should have received a copy of the GNU General Public License along with
 this program. If not, see <http://www.gnu.org/licenses/>.
 """
 
+import time
+from contextlib import contextmanager
 from threading import Lock, Event
 import can
 from functools import cached_property
@@ -37,13 +39,32 @@ class ResponseError(Exception):
 
 
 class CANChannel(BaseChannel):
+
+    # Inter-frame delay applied after CAN write frames (seconds).
+    # Zero during normal operation for full-speed control.
+    # Temporarily raised via throttled() context manager during bulk
+    # operations (e.g. import_values) to prevent overwhelming the
+    # device receive buffer.
+    BULK_SEND_DELAY = 0.003  # 3 ms
+
     def __init__(self, node_id, compare_hash = 0):
         self.node_id = node_id
         self.compare_hash = compare_hash
         self.queue = []
         self.lock = Lock()
         self.evt = Event()
+        self._send_delay = 0
         get_router().add_client(self._filter_frame, self._recv_cb)
+
+    @contextmanager
+    def throttled(self):
+        """Temporarily enable inter-frame write delay for bulk operations."""
+        prev = self._send_delay
+        self._send_delay = self.BULK_SEND_DELAY
+        try:
+            yield
+        finally:
+            self._send_delay = prev
 
     def _filter_frame(self, frame):
         return not frame.is_remote_frame and ids_from_arbitration(frame.arbitration_id)[2] == self.node_id
@@ -64,6 +85,8 @@ class CANChannel(BaseChannel):
         """
         rtr = False if data and len(data) else True
         get_router().send(self.create_frame(ep_id, rtr, data))
+        if not rtr and self._send_delay > 0:
+            time.sleep(self._send_delay)
 
     def recv(self, ep_id, timeout=1.0):
         """

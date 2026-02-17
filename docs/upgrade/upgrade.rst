@@ -133,6 +133,19 @@ Flashing the Firmware
 
    Before updating, it's a wise move to backup your current firmware and settings. Always pore over any version-specific instructions or release notes accompanying fresh firmware updates to stay informed.
 
+.. _can-id-preservation:
+
+CAN Node ID After Firmware Update
+##################################
+
+When upgrading firmware, the full device configuration (gains, limits, calibration, etc.) is invalidated because the firmware version changes. However, the **CAN node ID is preserved** across firmware updates. This means that on a multi-device CAN bus, each device retains its unique address after flashing and you can continue to update the remaining devices without ID conflicts.
+
+The CAN ID is stored in a separate metadata header in flash with its own integrity check, independent of the main configuration data. As long as this metadata is intact, the device will boot with the correct ID even though the rest of the configuration reverts to defaults.
+
+After upgrading, you will need to re-calibrate and re-configure your device (or import a previously exported configuration), but you do **not** need to reassign the CAN ID.
+
+For details on how CAN node IDs are assigned, see :ref:`multiple-instances`.
+
 Recovery Mode
 #############
 

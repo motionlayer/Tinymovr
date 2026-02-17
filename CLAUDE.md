@@ -139,6 +139,7 @@ Use this decision tree to find the right documentation:
 5. **Calibration Timing**: Do not reduce `CAL_R_LEN` or `CAL_L_LEN` (see [SAFETY.md](SAFETY.md))
 6. **Blocking in Control Loop**: Never call `printf()`, `delay()`, or `malloc()` from control loop
 7. **PyOCD Not Found in Makefile**: ST-Link targets must use `scripts/pyocd_run.sh` wrapper because Makefile spawns a new shell without venv activation
+8. **Bootloader CAN ID from Slot 0**: The DFU bootloader reads the CAN ID from the fixed start of the NVM region (slot 0), not the wear-leveled latest slot. The DFU `--node_id` may differ from the application's configured ID.
 
 **Details**: [SAFETY.md § Common Pitfalls](SAFETY.md#common-pitfalls)
 

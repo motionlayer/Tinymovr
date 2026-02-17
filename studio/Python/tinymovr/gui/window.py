@@ -36,12 +36,13 @@ from PySide6.QtWidgets import (
     QTreeWidgetItem,
     QSplitter,
     QTextBrowser,
+    QInputDialog,
 )
 from PySide6.QtGui import QAction
 import pyqtgraph as pg
 from tinymovr.constants import app_name
 from tinymovr.channel import ResponseError as ChannelResponseError
-from tinymovr.config import get_bus_config
+from tinymovr.config import get_bus_config, export_config, import_config
 from avlos import get_registry
 from avlos.datatypes import DataType
 from avlos.json_codec import AvlosEncoder
@@ -58,6 +59,7 @@ from tinymovr.gui import (
     format_value,
     display_file_open_dialog,
     display_file_save_dialog,
+    display_warning,
     magnitude_of,
     check_selected_items,
     configure_pretty_errors,
@@ -82,6 +84,7 @@ class MainWindow(QMainWindow):
 
         self.attr_widgets_by_id = {}
         self.graphs_by_id = {}
+        self._devices_by_name = {}
 
         self.setWindowTitle(app_name)
 
@@ -327,6 +330,7 @@ class MainWindow(QMainWindow):
         """
         Regenerate the attribute tree
         """
+        self._devices_by_name = dict(devices_by_name)
         self.delete_graphs()
         self.attr_widgets_by_id = {}
         self.tree_widget.clear()
@@ -341,7 +345,7 @@ class MainWindow(QMainWindow):
 
     def parse_node(self, node, name):
         if hasattr(node, "remote_attributes"):
-            widget = NodeTreeWidgetItem(name)
+            widget = NodeTreeWidgetItem(name, node)
             for attr_name, attr in node.remote_attributes.items():
                 attr_widgets_node_widget = self.parse_node(attr, attr_name)
                 widget.addChild(attr_widgets_node_widget)
@@ -409,26 +413,75 @@ class MainWindow(QMainWindow):
             )
         )
 
-    def on_export(self):
+    def _root_from_item(self, item):
+        """
+        Return the device root node for export/import, or None if the item
+        does not correspond to a device (e.g. invalid selection).
+        """
+        if not hasattr(item, "_tm_node") or item._tm_node is None:
+            return None
+        node = item._tm_node
+        return getattr(node, "root", node)
+
+    def _resolve_export_import_root(self):
+        """
+        Resolve which device root to use for export/import.
+        Returns (root_node, None) on success, or (None, error_message) on failure.
+        """
         selected_items = self.tree_widget.selectedItems()
-        if check_selected_items(selected_items):
-            root_node = selected_items[0]._tm_attribute.root
-            values_object = root_node.export_values()
-            json_data = json.dumps(values_object, cls=AvlosEncoder)
-            file_path = display_file_save_dialog()
-            with suppress(FileNotFoundError), open(file_path, "w") as file:
-                file.write(json_data)
+        if len(selected_items) == 1:
+            root_node = self._root_from_item(selected_items[0])
+            if root_node is None:
+                return None, "Select a device or a node under a device."
+            return root_node, None
+        if len(selected_items) > 1:
+            return None, "Multiple Tinymovr nodes selected.\nSelect a single node or none to choose a device."
+        # No selection
+        n = len(self._devices_by_name)
+        if n == 0:
+            return None, "No devices connected."
+        if n == 1:
+            return next(iter(self._devices_by_name.values())), None
+        # Multiple devices: show picker
+        names = list(self._devices_by_name.keys())
+        name, ok = QInputDialog.getItem(
+            self,
+            "Select device",
+            "Choose device to export/import:",
+            names,
+            0,
+            False,
+        )
+        if not ok or name not in self._devices_by_name:
+            return None, None  # user cancelled, no error message
+        return self._devices_by_name[name], None
+
+    def on_export(self):
+        root_node, err = self._resolve_export_import_root()
+        if err:
+            display_warning("Invalid Selection", err)
+            return
+        if root_node is None:
+            return  # user cancelled device picker
+        values_object = export_config(root_node)
+        json_data = json.dumps(values_object, cls=AvlosEncoder)
+        file_path = display_file_save_dialog()
+        with suppress(FileNotFoundError), open(file_path, "w") as file:
+            file.write(json_data)
 
     def on_import(self):
-        selected_items = self.tree_widget.selectedItems()
-        if check_selected_items(selected_items):
-            root_node = selected_items[0]._tm_attribute.root
-            file_path = display_file_open_dialog()
-            with suppress(FileNotFoundError), open(file_path, "r") as file:
-                values_object = json.load(file)
-                root_node.import_values(values_object)
-                time.sleep(0.1)
-                self.worker.force_regen()
+        root_node, err = self._resolve_export_import_root()
+        if err:
+            display_warning("Invalid Selection", err)
+            return
+        if root_node is None:
+            return  # user cancelled device picker
+        file_path = display_file_open_dialog()
+        with suppress(FileNotFoundError), open(file_path, "r") as file:
+            values_object = json.load(file)
+            import_config(root_node, values_object)
+            time.sleep(0.1)
+            self.worker.force_regen()
 
     def delete_graph_by_attr_name(self, attr_name):
         self.graphs_by_id[attr_name]["widget"].deleteLater()
