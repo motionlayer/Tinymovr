@@ -53,3 +53,6 @@ void homing_planner_set_max_stall_vel(float vel);
 void homing_planner_set_max_stall_delta_pos(float dpos);
 void homing_planner_set_max_stall_t(float t);
 void homing_planner_set_retract_distance(float dist);
+
+HomingPlannerConfig *homing_planner_get_config(void);
+void homing_planner_restore_config(HomingPlannerConfig *config_);

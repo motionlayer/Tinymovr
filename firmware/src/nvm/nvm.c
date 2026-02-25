@@ -95,6 +95,7 @@ bool nvm_save_config(void)
     config->controller_config = *controller_get_config();
     config->can_config = *CAN_get_config();
     config->traj_planner_config = *traj_planner_get_config();
+    config->homing_planner_config = *homing_planner_get_config();
     strncpy(config->version, GIT_VERSION, sizeof(config->version));
 
     // Calculate config checksum
@@ -209,6 +210,7 @@ bool nvm_load_config(void)
         controller_restore_config(&s.controller_config);
         CAN_restore_config(&s.can_config);
         traj_planner_restore_config(&s.traj_planner_config);
+        homing_planner_restore_config(&s.homing_planner_config);
         return true;
     }
     return false;

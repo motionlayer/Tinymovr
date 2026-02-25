@@ -159,3 +159,13 @@ void homing_planner_set_retract_distance(float dist)
         config.retract_distance = dist;
     }
 }
+
+HomingPlannerConfig *homing_planner_get_config(void)
+{
+    return &config;
+}
+
+void homing_planner_restore_config(HomingPlannerConfig *config_)
+{
+    config = *config_;
+}

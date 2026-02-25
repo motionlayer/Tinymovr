@@ -23,6 +23,7 @@
 #include <src/observer/observer.h>
 #include <src/controller/controller.h>
 #include <src/controller/trajectory_planner.h>
+#include <src/controller/homing_planner.h>
 #include <src/can/can.h>
 
 // Wear leveling metadata prepended to each config slot
@@ -51,6 +52,7 @@ struct NVMStruct {
     ControllerConfig controller_config;
     CANConfig can_config;
     TrajPlannerConfig traj_planner_config;
+    HomingPlannerConfig homing_planner_config;
     char version[16];
     uint32_t checksum;
 };
