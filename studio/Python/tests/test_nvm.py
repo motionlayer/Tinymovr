@@ -112,6 +112,34 @@ class TestNVM(TMTestCase):
         self.erase_config()
         time.sleep(0.2)
 
+    def test_c2_homing_parameter_persistence(self):
+        """
+        Test persisting homing parameters across config saves.
+        WARNING: This will perform one NVRAM write and two erase cycles.
+        """
+        self.check_state(0)
+        self.erase_config()
+        time.sleep(0.2)
+
+        self.tm.homing.velocity = 5000
+        self.tm.homing.max_homing_t = 10.0
+        self.tm.homing.retract_dist = 2000
+        self.tm.homing.stall_detect.velocity = 3000
+        self.tm.homing.stall_detect.delta_pos = 500
+        self.tm.homing.stall_detect.t = 2.0
+        self.save_config()
+
+        time.sleep(0.2)
+        self.reset_and_wait()
+        self.assertAlmostEqual(self.tm.homing.velocity, 5000 * tick / s, delta=1 * tick / s)
+        self.assertAlmostEqual(self.tm.homing.max_homing_t, 10.0 * s, delta=0.01 * s)
+        self.assertAlmostEqual(self.tm.homing.retract_dist, 2000 * tick, delta=1 * tick)
+        self.assertAlmostEqual(self.tm.homing.stall_detect.velocity, 3000 * tick / s, delta=1 * tick / s)
+        self.assertAlmostEqual(self.tm.homing.stall_detect.delta_pos, 500 * tick, delta=1 * tick)
+        self.assertAlmostEqual(self.tm.homing.stall_detect.t, 2.0 * s, delta=0.01 * s)
+        self.erase_config()
+        time.sleep(0.2)
+
     def test_d_position_control_w_loaded_config(self):
         """
         Test position control after saving and loading config.

@@ -58,7 +58,7 @@ TM_RAMFUNC bool homing_planner_evaluate()
             if (state.stay_t_current >= config.max_stay_t)
             {
                 // First time the endstop is considered found, reset origins and setpoints
-                frame_user_to_position_sensor_set_offset(observer_pos);
+                frame_user_to_position_sensor_set_offset(position_observer_get_pos_estimate());
                 controller_set_pos_setpoint_user_frame(0);
                 controller_set_vel_setpoint_user_frame(0);
             }
