@@ -139,6 +139,7 @@ void ADC_init(void)
     uint16_t ttemp = 0;
     memcpy(&ttemp, (const size_t *)0x0010041C, sizeof(uint16_t));
     adc_state.temp_cal_const = (float)ttemp;
+    adc_state.temp_cal_factor = (27.0f + 273.0f) / (adc_state.temp_cal_const + 122.88f);
 
     // Disable ADC
     pac5xxx_adc_enable(0);
@@ -284,9 +285,8 @@ TM_RAMFUNC void ADC_update(void)
 
 void ADC_update_temp(void)
 {
-    const float FTTEMP = 27 + 273;
     const float temp_val = (float)(PAC55XX_ADC->DTSERES2.VAL);
-    adc_state.temp = (((FTTEMP * (temp_val + 122.88f)) / (adc_state.temp_cal_const + 122.88f)) - 273)
+    adc_state.temp = ((temp_val + 122.88f) * adc_state.temp_cal_factor - 273.0f)
                      * adc_state.temp_D + adc_state.temp * (1.0f - adc_state.temp_D);
 }
 

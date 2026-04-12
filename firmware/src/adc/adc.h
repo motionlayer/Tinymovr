@@ -91,6 +91,7 @@ typedef struct
 {
     float temp;
     float temp_cal_const;
+    float temp_cal_factor;
     float temp_D;
     float I_phase_offset_D;
     FloatTriplet I_phase_meas;
