@@ -69,7 +69,10 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## License
 
-[GPLv3](https://choosealicense.com/licenses/gpl-3.0/)
+- **Firmware**: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- **Studio**: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
+- **Hardware**: [CERN Open Hardware Licence v2 - Permissive](https://ohwr.org/cern_ohl_p_v2.txt)
+- **Docs**: [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 ### External Links
 
