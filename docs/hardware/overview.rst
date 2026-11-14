@@ -47,6 +47,13 @@ M5.x
 
 Tinymovr M5.x is is our specialized driver for gimbal motors and light robotic joints. It features a very compact footprint and 5A max drive.
 
+M5.4 uses 20 mOhm current-sense shunts and requires the dedicated ``M54``
+firmware target. M5.1/M5.2 use 50 mOhm shunts and the ``M51`` target.
+The M54 target retains the M5 current limits, calibration defaults, and
+bootloader pinout, with current-sense amplifier gain x2.
+
+Do not interchange M51 and M54 firmware: their current measurement scales differ.
+
 Board Dimensions (M5.1, M5.2)
 #############################
 
@@ -97,5 +104,5 @@ connected through the interface identified as ``EXTERNAL_SPI`` in the API.
 It defaults to :ref:`differential-positioning`. Other supported board revisions
 default to ``STANDARD`` transform initialization.
 
-Use the dedicated ``X51`` firmware files from the 3.2.0 release, even though
+Use the dedicated ``X51`` firmware files from the 3.2.1 release, even though
 the board shares M5.1 electricals.

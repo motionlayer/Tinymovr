@@ -228,7 +228,7 @@ which sensor is used for control.
 Differential (Vernier) Positioning
 ==================================
 
-Firmware 3.2.0 supports ``STANDARD`` and ``DIFFERENTIAL`` transform initialization
+Firmware 3.2.1 supports ``STANDARD`` and ``DIFFERENTIAL`` transform initialization
 through ``tm1.sensors.select.transform_init.mode``. Differential mode requires a
 compatible geared pair of encoders; it is not a general substitute for a second
 position sensor. X5.1 includes this arrangement and defaults to differential
