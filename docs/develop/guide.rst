@@ -6,8 +6,8 @@ Developers
 .. note::
    These source-development instructions describe the frozen public 3.0.0
    codebase. Current firmware and Studio source development is private.
-   To install 3.2.0, use :doc:`../studio/installation` and
-   :doc:`../upgrade/upgrade`; building this public source will not produce 3.2.0.
+   To install 3.2.1, use :doc:`../studio/installation` and
+   :doc:`../upgrade/upgrade`; building this public source will not produce 3.2.1.
 
 Overview
 ########

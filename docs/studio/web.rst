@@ -3,10 +3,13 @@ Studio Web
 
 Studio Web is a browser dashboard for configuring and controlling Tinymovr
 through an slcan-compatible USB-CAN serial adapter. Download
-``motionlayer-studio-web-3.2.0.html`` from the
-`3.2.0 release <https://github.com/motionlayer/Tinymovr/releases/tag/3.2.0>`_
+``motionlayer-studio-web-3.2.1.html`` from the
+`3.2.1 release <https://github.com/motionlayer/Tinymovr/releases/tag/3.2.1>`_
 and open it in a desktop browser with Web Serial support, such as Chrome or
 Edge. Firefox and Safari are not supported by this dashboard.
+
+Web Studio shares its release version with firmware and Python Studio. The
+version appears in the dashboard header; hover over it to see the source commit.
 
 Connect
 -------

@@ -24,7 +24,7 @@ copyright = '2020-2026, MotionLayer P.C.'
 author = 'MotionLayer P.C.'
 
 # Version of the documented firmware, independent of the public Git tag.
-release = '3.2.0'
+release = '3.2.1'
 version = release
 
 

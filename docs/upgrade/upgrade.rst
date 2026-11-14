@@ -66,11 +66,11 @@ Prerequisites
 
    .. code-block:: bash
 
-      pip install --upgrade tinymovr==3.2.0
+      pip install --upgrade tinymovr==3.2.1
 
 2. **Download the Firmware**:
 
-   Head to the `Tinymovr Releases Page <https://github.com/motionlayer/Tinymovr/releases/tag/3.2.0>`_ and download the precompiled binary of the firmware that matches your board's hardware revision. For CAN DFU, select ``tinymovr-3.2.0-<revision>-upgrade.bin``. For example, M5.1 and M5.2 use ``tinymovr-3.2.0-M51-upgrade.bin``; X5.1 uses ``tinymovr-3.2.0-X51-upgrade.bin``. Do not use the combined bootloader/application ``-release.bin`` image for CAN DFU.
+   Head to the `Tinymovr Releases Page <https://github.com/motionlayer/Tinymovr/releases/tag/3.2.1>`_ and download the precompiled binary of the firmware that matches your board's hardware revision. For CAN DFU, select ``tinymovr-3.2.1-<revision>-upgrade.bin``. For example, M5.1 and M5.2 use ``tinymovr-3.2.1-M51-upgrade.bin``; X5.1 uses ``tinymovr-3.2.1-X51-upgrade.bin``. M5.4 requires the dedicated ``M54`` upgrade image from a release providing that target; do not use an ``M51`` image. Do not use the combined bootloader/application ``-release.bin`` image for CAN DFU.
 
 Flashing the Firmware
 =====================
@@ -104,7 +104,7 @@ Flashing the Firmware
 
    .. code-block:: bash
 
-      tinymovr_dfu --node_id=<your node id> --bin=path/to/your/downloaded/tinymovr-3.2.0-<revision>-upgrade.bin
+      tinymovr_dfu --node_id=<your node id> --bin=path/to/your/downloaded/tinymovr-3.2.1-<revision>-upgrade.bin
 
    Replace the placeholders in the path with the appropriate values based on where you've saved the .bin file and its name.
 
@@ -112,13 +112,13 @@ Flashing the Firmware
 
    .. code-block:: bash
 
-      tinymovr_dfu --node_id=<your node id> --bin=~/Downloads/tinymovr-3.2.0-M51-upgrade.bin
+      tinymovr_dfu --node_id=<your node id> --bin=~/Downloads/tinymovr-3.2.1-M51-upgrade.bin
 
    To forgo the automatic reset post-flash, append the ``--no-reset`` flag:
 
    .. code-block:: bash
 
-      tinymovr_dfu --node_id=<your node id> --bin=~/Downloads/tinymovr-3.2.0-M51-upgrade.bin --no-reset
+      tinymovr_dfu --node_id=<your node id> --bin=~/Downloads/tinymovr-3.2.1-M51-upgrade.bin --no-reset
 
 3. **Follow the Script's Prompts**:
 

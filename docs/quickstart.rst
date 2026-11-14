@@ -28,7 +28,7 @@ Tinymovr can be installed using pip. Python 3.10 or greater is required.
 
 .. code-block:: console
 
-    pip3 install --upgrade 'tinymovr[GUI]==3.2.0'
+    pip3 install --upgrade 'tinymovr[GUI]==3.2.1'
     tinymovr
 
 You should now be looking at the Tinymovr Studio GUI interface.
@@ -42,7 +42,7 @@ Installation on Raspberry Pi requires a few additional steps.
 
     sudo apt update
     sudo apt install python3-pip python3-numpy libopenjp2-7 libtiff5
-    pip3 install --upgrade tinymovr==3.2.0
+    pip3 install --upgrade tinymovr==3.2.1
 
 You may also need to append a directory to your PATH variable:
 
